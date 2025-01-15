@@ -1,152 +1,60 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
-import 'dart:math';
+import 'package:kitason0722/GameScene.dart';
 
 void main() {
-  runApp(const ReactionGame());
+  runApp(const TitleScene());
 }
 
-class ReactionGame extends StatelessWidget {
-  const ReactionGame({Key? key}) : super(key: key);
+class TitleScene extends StatelessWidget {
+  const TitleScene({Key? key}) : super(key: key);
 
+  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'リアクションテストゲーム',
+      title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.green,
       ),
-      home: const GameScreen(),
+      home: MyHomePage(),
     );
   }
 }
 
-class GameScreen extends StatefulWidget {
-  const GameScreen({Key? key}) : super(key: key);
-
-  @override
-  _GameScreenState createState() => _GameScreenState();
-}
-
-class _GameScreenState extends State<GameScreen> {
-  final Random _random = Random();
-  Color _backgroundColor = Colors.white;
-  late Timer _timer;
-  bool _isTargetColor = false;
-  int _score = 0;
-  bool _gameRunning = false;
-
-  // ターゲットの色
-  final Color _targetColor = Colors.red;
-
-  // ゲームを開始する
-  void _startGame() {
-    setState(() {
-      _score = 0;
-      _gameRunning = true;
-    });
-
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        // 背景色をランダムに変更
-        _backgroundColor = Color.fromARGB(
-          255,
-          _random.nextInt(256),
-          _random.nextInt(256),
-          _random.nextInt(256),
-        );
-        // ターゲットの色かどうかを判定
-        _isTargetColor = _backgroundColor == _targetColor;
-      });
-    });
-  }
-
-  // ゲームを終了する
-  void _endGame() {
-    _timer.cancel();
-    setState(() {
-      _gameRunning = false;
-      _backgroundColor = Colors.white;
-    });
-  }
-
-  // タップ時の動作
-  void _onTap() {
-    if (_isTargetColor) {
-      setState(() {
-        _score++;
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _timer.cancel();
-    super.dispose();
-  }
-
+class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold
-      (
-      appBar: AppBar
-        (
-        title: const Text('リアクションテストゲーム'),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+            'タイトル画面',
+          style:TextStyle(
+            fontSize: 30,
+          ),
+        ),
+
       ),
-      body: GestureDetector
-        (
-        onTap: _gameRunning ? _onTap : null,
-        child: Container
-          (
-          color: _backgroundColor,
-          child: Center
-            (
-            child: _gameRunning
-                ? Column
-              (
-              mainAxisSize: MainAxisSize.min,
-              children:
-              [
-                Text
-                  (
-                  'スコア: $_score',
-                  style: const TextStyle(fontSize: 32), // スコアのフォントサイズを調整
-                ),
-                const SizedBox(height: 20),
-                const Text
-                  (
-                  '背景が赤になったら押せ!',
-                  style: TextStyle(fontSize: 20,
-                      fontWeight: FontWeight.bold), // メッセージのフォントサイズを調整
-                ),
-              ],
-            )
-                : SizedBox
-              (
-              width: 200, // ボタンの幅
-              child: ElevatedButton
-                (
-                onPressed: _startGame,
-                style: ElevatedButton.styleFrom
-                  (
-                  minimumSize: const Size(200, 60), // ボタンサイズを指定
-                ),
-                child: const Text
-                  (
-                  'スタート',
-                  style: TextStyle(fontSize: 20), // ボタン文字サイズ
-                ),
-              ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => GameScene())
+            );
+          },
+          child: Text(
+              "スタート",
+            style:TextStyle(
+              color:Colors.yellow,
+              fontSize: 30,
             ),
+          ),
+          style:ElevatedButton.styleFrom(
+              minimumSize: Size(150, 50),
+              backgroundColor:Colors.black,
+              side: BorderSide(color:Colors.orange,width: 3),
           ),
         ),
       ),
-      floatingActionButton: _gameRunning
-          ? FloatingActionButton(
-        onPressed: _endGame,
-        child: const Icon(Icons.stop),
-      )
-          : null,
     );
   }
 }

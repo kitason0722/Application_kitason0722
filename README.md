@@ -14,6 +14,9 @@
 ### リザルト画面
 <img src="https://github.com/user-attachments/assets/3d572424-f149-4343-8f4c-24247757176b" width="200">
 
+### ランキング表示
+<img src="https://github.com/user-attachments/assets/8996e02b-f30f-45c0-af1a-3e7960cd9693" width="200">
+
 ## 設計方針
 
 

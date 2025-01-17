@@ -3,7 +3,7 @@
 
 ## アプリ概要
 ### タイトル画面
-![Image](https://github.com/user-attachments/assets/326739c6-abcd-489e-994b-2ebe917dd143)
+<img src="https://github.com/user-attachments/assets/326739c6-abcd-489e-994b-2ebe917dd143" width="300">
 ### ゲーム画面
 ![Image](https://github.com/user-attachments/assets/0bdf0088-1694-41d1-b9ce-d077e62da575)
 ### ゲーム画面（プレイ中）

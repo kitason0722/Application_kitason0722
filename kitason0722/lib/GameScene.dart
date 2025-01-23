@@ -167,13 +167,10 @@ class _GameSceneState extends State<GameScene> {
               top: _targetPosition.dy, // ターゲットのY座標
               child: GestureDetector(
                 onTap: _onTargetTapped, // ターゲットがタップされたときの処理を実行
-                child: Container(
+                child: Image.asset(
+                  'Materials/hero.jpg',
                   width: 50,
                   height: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.red, // ターゲットの色
-                    shape: BoxShape.circle, // ターゲットの形状
-                  ),
                 ),
               ),
             ),

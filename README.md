@@ -26,7 +26,9 @@
 リザルト画面 -> タイトル画面
 
 **ルール：**勇者のターゲットをタップするとスコア+1、スライムのターゲットをタップするとスコア-1とする。
+
 <img src="https://github.com/user-attachments/assets/68b84739-1a19-4de0-8cc1-b217508e1416" width="100">
+
 <img src="https://github.com/user-attachments/assets/578eed06-aff4-4940-8076-a7dd2d093d3b" width="100">
 
 ## 工夫したところ

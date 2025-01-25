@@ -13,39 +13,123 @@ class GameScene extends StatefulWidget {
   _GameSceneState createState() => _GameSceneState();
 }
 
-class _GameSceneState extends State<GameScene> {
-  int _score = 0; // 現在のスコアを保持
-  Offset _targetPosition = Offset(100, 100);// ターゲットの現在位置
-  Random _random = Random();// ランダム位置生成用のRandomクラス
-  Timer? _gameTimer; //ゲーム進行用のタイマー
-  int _timeLeft = 30;// ゲームの残り時間
-  bool _isGameActive = false;//ゲームがアクティブかどうかを管理
+class _GameSceneState extends State<GameScene>
+{
+  int _score = 0;
+  int _timeLeft = 30;
+  bool _isGameActive = false;
+  Random _random = Random();
+  Timer? _gameTimer,_spawnTimer;
+  List<Map<String,dynamic>> _targets = [];//ターゲットのリスト
+  double _targetDisplayduration = 2.0;
+  double _heroratio = 0.8;//hero.pngの出現割合
+  double _spawnInterval = 1.0;//ターゲット出現間隔
+
 
   // ゲームを開始するメソッド
   void _startGame() {
     setState(() {
-      _score = 0; // スコアをリセット
-      _timeLeft = 30; // 残り時間をリセット
-      _isGameActive = true; // ゲームをアクティブに設定
-      _targetPosition = Offset(
-        _random.nextDouble() * (MediaQuery.of(context).size.width - 50),
-        _random.nextDouble() * (MediaQuery.of(context).size.height - 150),
-      ); // ターゲットの初期位置を設定
+      //変数、リストの初期化
+      _score = 0;
+      _timeLeft = 30;
+      _isGameActive = true;
+      _targets.clear();
+      _targetDisplayduration = 2.0;
+      _heroratio = 0.8;
+      _spawnInterval = 1.0;
     });
 
-    // タイマーを初期化
+    //タイマーの初期化
     _gameTimer?.cancel();
+    _spawnTimer?.cancel();
+
+    //ゲーム時間
     _gameTimer = Timer.periodic(Duration(seconds: 1), (timer) {
       setState(() {
-        if (_timeLeft > 0) {
+        if (_timeLeft > 0)
+        {
           _timeLeft--; // 残り時間を減少
-        } else {
-          _gameTimer?.cancel(); // タイマー終了
-          _isGameActive = false;//ゲームを非アクティブに設定
+
+          if (_timeLeft % 5 == 0)
+          {
+            if (_targetDisplayduration > 0.5) _targetDisplayduration -= 0.2;
+            if (_heroratio > 0.5) _heroratio -= 0.05; // heroの割合を減少
+          }
+
+          _spawnInterval = _changeSpawnInterval();
+        }
+        else
+        {
+          _gameTimer?.cancel();
+          _spawnTimer?.cancel();
+          _isGameActive = false;
           _updateRanking();
-          _showGameOverDialog(); // ゲーム終了ダイアログを表示
+          _showGameOverDialog();
         }
       });
+    });
+    // ターゲットの出現を管理
+    _spawnTimer = Timer.periodic(Duration(milliseconds: (_spawnInterval * 1000).toInt()), (timer)
+    {
+      if (_isGameActive) _addTarget();
+    });
+  }
+
+  double _changeSpawnInterval()
+  {
+    return 1.0 - (0.7*(30-_timeLeft)/30);
+  }
+
+  int _TargetNumber()
+  {
+    // 難易度曲線を基に一度に出現するターゲット数を算出
+    // 最初は1体、徐々に最大5体まで増加
+    return 1 + ((5 - 1) * (30 - _timeLeft) ~/ 30);
+  }
+
+  void _setTarget() {
+    final isHero = _random.nextDouble() <= _heroratio;
+    final size = isHero ? 100.0 : 200.0; // ターゲットのサイズ
+    final maxWidth = MediaQuery.of(context).size.width - size;
+    final maxHeight = MediaQuery.of(context).size.height - size - 100;
+
+    final newTarget =
+    {
+      'position': Offset
+        (
+        _random.nextDouble() * maxWidth,
+        _random.nextDouble() * maxHeight,
+      ),
+      'id':  DateTime.now().millisecondsSinceEpoch + _random.nextInt(1000), // 一意のID
+      'type': isHero ? 'hero' : 'slime',
+    };
+    _targets.add(newTarget);
+    // 一定時間後にターゲットを削除
+    Timer(Duration(seconds: _targetDisplayduration.toInt()), ()
+    {
+      setState(()
+      {
+        _targets.removeWhere((target) => target['id'] == newTarget['id']);
+      });
+    });
+  }
+
+  void _addTarget()
+  {
+    int targetnum = _TargetNumber();
+    for (int i = 0; i < targetnum; i++)_setTarget();
+  }
+
+  //タップ時の処理
+  void _onTargetTapped(int id,String type)
+  {
+    setState(() {
+      if (type == 'hero') {
+        _score++;
+      } else if (type == 'slime') {
+        _score--;
+      }
+      _targets.removeWhere((target) => target['id'] == id);
     });
   }
 
@@ -81,20 +165,6 @@ class _GameSceneState extends State<GameScene> {
         ],
       ),
     );
-  }
-
-  // ターゲットがタップされたときの処理
-  void _onTargetTapped() {
-    if (_isGameActive && _timeLeft > 0) { // 残り時間がある場合のみスコアを更新
-      setState(() {
-        _score++; // スコアを増加
-        // ターゲットの位置をランダムに更新
-        _targetPosition = Offset(
-          _random.nextDouble() * (MediaQuery.of(context).size.width - 50),
-          _random.nextDouble() * (MediaQuery.of(context).size.height - 150),
-        );
-      });
-    }
   }
 
   @override
@@ -160,20 +230,24 @@ class _GameSceneState extends State<GameScene> {
               ],
             ),
           ),
-          // ターゲットの位置を描画
-          if (_timeLeft > 0)
-            Positioned(
-              left: _targetPosition.dx, // ターゲットのX座標
-              top: _targetPosition.dy, // ターゲットのY座標
+          // ターゲットを表示
+          ..._targets.map((target) {
+            final size = target['type'] == 'hero' ? 100.0 : 200.0;//ターゲットごとのサイズ
+            return Positioned(
+              left: target['position'].dx,
+              top: target['position'].dy,
               child: GestureDetector(
-                onTap: _onTargetTapped, // ターゲットがタップされたときの処理を実行
+                onTap: () => _onTargetTapped(target['id'],target['type']),
                 child: Image.asset(
-                  'Materials/hero.jpg',
-                  width: 50,
-                  height: 50,
+                  target['type'] == 'hero'
+                  ?'Materials/hero.png'
+                  :'Materials/slime.png',
+                  width: size,
+                  height: size,
                 ),
               ),
-            ),
+            );
+          }).toList(),
         ],
       ),
     );
@@ -181,7 +255,7 @@ class _GameSceneState extends State<GameScene> {
 
   @override
   void dispose() {
-    _gameTimer?.cancel(); // タイマーをキャンセルしてリソースを解放
+    _gameTimer?.cancel();
     super.dispose();
   }
 }

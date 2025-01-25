@@ -75,11 +75,13 @@ class _GameSceneState extends State<GameScene>
     });
   }
 
+  //残り時間に応じてターゲットの表示時間を変更
   double _changeSpawnInterval()
   {
     return 1.0 - (0.7*(30-_timeLeft)/30);
   }
 
+  //残り時間に応じてターゲットの数を変更
   int _TargetNumber()
   {
     // 難易度曲線を基に一度に出現するターゲット数を算出
@@ -114,6 +116,7 @@ class _GameSceneState extends State<GameScene>
     });
   }
 
+  //ターゲットの追加
   void _addTarget()
   {
     int targetnum = _TargetNumber();
